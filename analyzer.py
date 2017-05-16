@@ -130,19 +130,19 @@ def train_hmm(labels):
     # Number of alphabet letters plus a SPACE.
     num_states=27
     model = hmm.MultinomialHMM(n_components=num_states,
-    							verbose=True,
+    							verbose=False,
     							params='e',
     							init_params='e',
     							tol=0.0001,
-    							n_iter=500)
+    							n_iter=350)
 
     model.startprob_ = np.array(init_probs)
     model.transmat_ = np.array(trans_probs)
-    model.emissionprob_ = np.random.rand(num_states, num_classes)
+    model.emissionprob_ = np.random.rand(num_states, num_states)
 
     labels = labels.reshape(-1,1)
 
-    model.emissionprob_ = np.random.rand(num_states, num_classes)
+    model.emissionprob_ = np.random.rand(num_states, num_states)
     model.fit(labels)
     preds = model.predict(labels)
     score = model.score(labels)
@@ -158,6 +158,7 @@ def hmm_predict(labels, num_iters=8):
         score, pred = train_hmm(labels)
         scores.append(score)
         preds.append(pred)
+        print("".join([util.pos_to_letter(p) for p in pred]))
 
     best_ind = scores.index(max(scores))
     best_pred = preds[best_ind]
