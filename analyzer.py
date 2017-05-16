@@ -2,7 +2,6 @@ import sys
 import scipy
 import scipy.io.wavfile
 from scipy import signal, cluster, stats
-from scipy.cluster.vq import vq, kmeans, whiten
 import sklearn.cluster
 from hmmlearn import hmm
 import time
@@ -11,8 +10,6 @@ import util
 
 import numpy as np
 from numpy.fft import rfft, hfft
-
-import matplotlib.pyplot as plt
 
 """
 Decode acoustic ciphertexts.
@@ -55,9 +52,7 @@ def detect_chirp_starts(samples, sample_rate):
     # Used to hold off detection after a peak.
     holdoff_until_sample = 0
 
-    # Extract chirp starts. If two peaks are less than 'chirp_holdoff_ms' apart,
-    # assume they are a push/release pair and only keep the first one i.e. the
-    # 'push'
+    # Extract chirp starts. Hold off after fidning a peak so we don't double count.
     i = 0
     chirp_holdoff_ms = 150
 
@@ -135,11 +130,11 @@ def train_hmm(labels):
     # Number of alphabet letters plus a SPACE.
     num_states=27
     model = hmm.MultinomialHMM(n_components=num_states,
-    							verbose=False,
+    							verbose=True,
     							params='e',
     							init_params='e',
     							tol=0.0001,
-    							n_iter=1000)
+    							n_iter=500)
 
     model.startprob_ = np.array(init_probs)
     model.transmat_ = np.array(trans_probs)
@@ -188,8 +183,8 @@ if __name__ == '__main__':
     skmeans = sklearn.cluster.KMeans(n_clusters=num_classes).fit(chirp_fvectors)
     chirp_labels = skmeans.labels_
 
-    outstr = "".join([chr(l+65) for l in chirp_labels]).replace("["," ")
-    print(outstr.lower())
+    pred_str = "".join([util.pos_to_letter(l) for l in chirp_labels]).lower()
+    print(pred_str)
 
     # (4) Hidden Markov Model Label Inference. [Optional]
     pred = hmm_predict(chirp_labels)
