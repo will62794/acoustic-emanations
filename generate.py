@@ -7,15 +7,21 @@ import matplotlib.pyplot as plt
 import time
 import sys
 
-""" Generate acoustic ciphertexts from text files. """
+"""
+Generate acoustic ciphertexts from text files.
+
+An acoustic ciphertext is an audio signal that represents some piece of written
+English text. It consists a sequence of "chirps", separated by periods of
+silence. Each chirp has a unique signature, which corresponds to a single letter
+of the English alphabet, or to a SPACE. To generate chirps, each letter is
+assigned a unique 7 bit code. There are 7 fundamental frequencies which compose
+every chirp. The presence of a frequency in a letter's chirp is determined by
+whether its index is 'on', i.e. a 1 bit in the letter's code.
+
+"""
 
 SAMPLE_RATE = 44100
 
-# The set of fundamental frequencies for ciphertext beeps.
-# Each letteris assigned a beep which is some linear combination
-# of these frequencies.
-fund_freqs = [800, 1600, 2400, 3000, 3800, 4600, 5400]
-letter_freqs = {alphabet_ind_to_char(n):int_to_bitvector((n+15),7) for n in range(0,27)}
 
 def int_to_bitvector(num, bits):
 	return [int(b) for b in bin(num)[2:].zfill(bits)]
@@ -24,6 +30,15 @@ def alphabet_ind_to_char(i):
 	if i==26:
 		return " "
 	return chr(i+97)
+
+# The set of fundamental frequencies for ciphertext beeps.
+# Each letter is assigned a beep which is some linear combination
+# of these frequencies.
+fund_freqs = [800, 1600, 2400, 3000, 3800, 4600, 5400]
+offset = 15
+num_bits = 7
+letter_freqs = {alphabet_ind_to_char(n):int_to_bitvector((n+offset),num_bits) for n in range(0,27)}
+
 
 def gen_beep(sample_rate, freq, length_ms, ampl):
 	""" Generate a sinusoidal wave beep at a single frequency. """
@@ -92,9 +107,8 @@ if __name__ == '__main__':
 	final_signal = (cipher_signal * 32768).astype('int16')
 
 	# Export to WAV file.
-	out_file = "wav_samples/generated/" + textfile.split(".")[0] + ".wav"
+	out_file = textfile.split(".")[0] + ".wav"
 	scipy.io.wavfile.write(out_file, SAMPLE_RATE, final_signal)
-	print("Wrote wav file.")
 
 
 

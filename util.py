@@ -1,6 +1,7 @@
-#
-# Utility functions for audio processing, etc.
-#
+"""
+Utility functions for audio processing, etc.
+"""
+import string
 
 def millis_to_samples(sample_rate, ms):
 	""" Convert a millisecond duration to a length in samples. """
@@ -14,3 +15,7 @@ def letter_pos(l):
 	""" Letter position in alphabet. SPACE is 27th letter. """
 	s = string.ascii_lowercase+" "
 	return s.index(l)
+
+def pos_to_letter(i):
+	""" Convert alphabet position to letter. SPACE is 27th letter. """
+	return (string.ascii_lowercase+" ")[i]
